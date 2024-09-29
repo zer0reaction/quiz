@@ -16,10 +16,11 @@ def welcome(message):
 
     for i in range(len(labels)):
         label = labels[i]
+        question_status = question_statuses[i]
 
-        if str(question_statuses[i]) == "right":
+        if question_status == "right":
             label += "✅"
-        elif question_statuses[i] == "wrong":
+        elif question_status == "wrong":
             label += "❌"
 
         markup.add(InlineKeyboardButton(label))
@@ -99,37 +100,45 @@ def show_hint(message, question_number):
     answer_question(message, question_number)
 
 
+@bot.message_handler(commands=["start"])
+def start(message):
+    database.init_user(message.from_user.id)
+    welcome(message)
+
+
 @bot.message_handler()
 def message_handler(message):
     text = message.text
     state = database.get_user_state(message.from_user.id)
     labels = database.get_question_labels()
 
-    if text == "/start":
-        database.init_user(message.from_user.id)
-        welcome(message)
+    # Checking back buttons
+    if text == "Назад":
+        if "viewing_question_" in str(state):
+            welcome(message)
 
-    elif text == "Назад" and ("viewing_question_" in str(state)):
-        welcome(message)
+        elif "answering_question_" in str(state):
+            question_number = int(re.findall(r"\d+", str(state))[0])
+            display_question(message, question_number)
 
-    elif text == "Назад" and ("answering_question_" in str(state)):
-        question_number = int(re.findall(r"\d+", str(state))[0])
-        display_question(message, question_number)
+        elif "answered_right_" in str(state):
+            welcome(message)
 
-    elif text == "Назад" and ("answered_right_" in str(state)):
-        welcome(message)
+        elif "answered_wrong_" in str(state):
+            welcome(message)
 
-    elif text == "Назад" and ("answered_wrong_" in str(state)):
-        welcome(message)
+    # Checking going to questions
+    elif state == "welcome":
+        # When the text is with mark
+        if text[:-1] in labels:
+            question_number = labels.index(text[:-1]) + 1
+            display_question(message, question_number)
 
-    elif text[:-1] in labels and state == "welcome":
-        question_number = labels.index(text[:-1]) + 1
-        display_question(message, question_number)
+        elif text in labels:
+            question_number = labels.index(text) + 1
+            display_question(message, question_number)
 
-    elif text in labels and state == "welcome":
-        question_number = labels.index(text) + 1
-        display_question(message, question_number)
-
+    # Checking question buttons
     elif text == "Ответить на вопрос" and ("viewing_question_" in str(state)):
         question_number = int(re.findall(r"\d+", str(state))[0])
         answer_question(message, question_number)
@@ -138,6 +147,7 @@ def message_handler(message):
         question_number = int(re.findall(r"\d+", str(state))[0])
         show_hint(message, question_number)
 
+    # Checking answers
     elif "answering_question_" in str(state):
         question_number = int(re.findall(r"\d+", str(state))[0])
         check_answer(message, question_number)

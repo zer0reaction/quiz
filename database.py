@@ -53,6 +53,9 @@ def init_user(user_id: int):
         con.commit()
         con.close()
 
+    else:
+        print("Error initializing! User " + str(user_id) + " does not exits")
+
 
 def get_user_state(user_id: int):
     if check_user_existence(user_id):
@@ -71,6 +74,9 @@ def get_user_state(user_id: int):
         con.close()
         return data[0]
 
+    else:
+        print("Error getting user state! User " + str(user_id) + " does not exits")
+
 
 def change_user_state(user_id: int, state: str):
     if check_user_existence(user_id):
@@ -86,6 +92,9 @@ def change_user_state(user_id: int, state: str):
         cur.execute(query)
         con.commit()
         con.close()
+
+    else:
+        print("Error changing user state! User " + str(user_id) + " does not exits")
 
 
 def get_question_statuses(user_id: int):
@@ -109,6 +118,9 @@ def get_question_statuses(user_id: int):
 
         con.close()
         return statuses
+    else:
+        print("Error getting question statuses! User " + str(user_id) + " does not exits")
+        return []
 
 # ----- USERS -----
 
