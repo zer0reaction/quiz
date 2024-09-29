@@ -16,7 +16,6 @@ def check_user_existence(user_id: int):
     data = cur.fetchone()
 
     con.close()
-
     return data[0] == 1
 
 
@@ -53,6 +52,40 @@ def init_user(user_id: int):
         con.close()
 
 
+def get_user_state(user_id: int):
+    if check_user_existence(user_id):
+        con = sqlite3.connect("data/users.db")
+        cur = con.cursor()
+
+        query = """
+        select state
+        from state
+        where id = {}
+        """.format(user_id)
+
+        cur.execute(query)
+        data = cur.fetchone()
+
+        con.close()
+        return data[0]
+
+
+def change_user_state(user_id: int, state: str):
+    if check_user_existence(user_id):
+        con = sqlite3.connect("data/users.db")
+        cur = con.cursor()
+
+        query = """
+        update state
+        set state = '{}'
+        where id = {}
+        """.format(state, user_id)
+
+        cur.execute(query)
+        con.commit()
+        con.close()
+
+
 def get_question_labels():
     con = sqlite3.connect("data/quiz.db")
     cur = con.cursor()
@@ -66,4 +99,40 @@ def get_question_labels():
     for item in data:
         labels.append(item[0])
 
+    con.close()
     return labels
+
+
+def get_question_photo(question_number: int):
+    con = sqlite3.connect("data/quiz.db")
+    con.text_factory = bytes
+    cur = con.cursor()
+
+    query = """
+    select photo
+    from questions
+    where rowid = {}
+    """.format(question_number)
+
+    cur.execute(query)
+    data = cur.fetchone()
+
+    con.close()
+    return data[0]
+
+
+def get_question_qha(question_number: int):
+    con = sqlite3.connect("data/quiz.db")
+    cur = con.cursor()
+
+    query = """
+    select question, hint, answer
+    from questions
+    where rowid = {}
+    """.format(question_number)
+
+    cur.execute(query)
+    data = cur.fetchall()
+
+    con.close()
+    return data
