@@ -87,10 +87,33 @@ def change_user_state(user_id: int, state: str):
         con.commit()
         con.close()
 
+
+def get_question_statuses(user_id: int):
+    if check_user_existence(user_id):
+        con = sqlite3.connect("data/users.db")
+        cur = con.cursor()
+
+        query = """
+        select status
+        from questions
+        where id = {}
+        """.format(user_id)
+
+        cur.execute(query)
+        data = cur.fetchall()
+
+        statuses = []
+
+        for item in data:
+            statuses.append(item[0])
+
+        con.close()
+        return statuses
+
 # ----- USERS -----
 
 
-# ----- QUESTIONS -----
+# ----- QUIZ -----
 
 def get_question_labels():
     con = sqlite3.connect("data/quiz.db")
@@ -159,4 +182,4 @@ def change_question_status(question_number: int, user_id: int, status: str):
     con.commit()
     con.close()
 
-# ----- QUESTIONS -----
+# ----- QUIZ -----

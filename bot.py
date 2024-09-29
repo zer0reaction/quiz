@@ -5,19 +5,31 @@ bot = telebot.TeleBot(token=creds.token)
 
 
 def welcome(message):
+    print("Welcoming user " + str(message.from_user.id))
+
     database.change_user_state(message.from_user.id, "welcome")
 
     text = "Ответы вводятся согласно нормам русского языка.\n\nВыберите вопрос:"
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
     labels = database.get_question_labels()
+    question_statuses = database.get_question_statuses(message.from_user.id)
 
-    for label in labels:
+    for i in range(len(labels)):
+        label = labels[i]
+
+        if str(question_statuses[i]) == "right":
+            label += "✅"
+        elif question_statuses[i] == "wrong":
+            label += "❌"
+
         markup.add(InlineKeyboardButton(label))
 
     bot.send_message(message.chat.id, text, reply_markup=markup)
 
 
 def display_question(message, question_number: int):
+    print("Displaying question for user " + str(message.from_user.id))
+
     database.change_user_state(message.from_user.id, "viewing_question_" + str(question_number))
 
     data = database.get_question_qha(question_number)
@@ -36,6 +48,8 @@ def display_question(message, question_number: int):
 
 
 def answer_question(message, question_number: int):
+    print("User " + str(message.from_user.id) + " is answering question")
+
     database.change_user_state(message.from_user.id, "answering_question_" + str(question_number))
 
     text = "Отправьте Ваш ответ на вопрос:"
@@ -48,6 +62,7 @@ def answer_question(message, question_number: int):
 
 
 def check_answer(message, question_number: int):
+    print("Checking answer for user " + str(message.from_user.id))
     data = database.get_question_qha(question_number)
 
     answers = data[2]
@@ -75,6 +90,8 @@ def check_answer(message, question_number: int):
 
 
 def show_hint(message, question_number):
+    print("Showing hint for user " + str(message.from_user.id))
+
     data = database.get_question_qha(question_number)
     hint = data[1]
 
@@ -104,6 +121,10 @@ def message_handler(message):
 
     elif text == "Назад" and ("answered_wrong_" in str(state)):
         welcome(message)
+
+    elif text[:-1] in labels and state == "welcome":
+        question_number = labels.index(text[:-1]) + 1
+        display_question(message, question_number)
 
     elif text in labels and state == "welcome":
         question_number = labels.index(text) + 1
