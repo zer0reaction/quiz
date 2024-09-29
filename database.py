@@ -1,6 +1,8 @@
 import sqlite3
 
 
+# ----- USERS -----
+
 def check_user_existence(user_id: int):
     con = sqlite3.connect("data/users.db")
     cur = con.cursor()
@@ -85,6 +87,10 @@ def change_user_state(user_id: int, state: str):
         con.commit()
         con.close()
 
+# ----- USERS -----
+
+
+# ----- QUESTIONS -----
 
 def get_question_labels():
     con = sqlite3.connect("data/quiz.db")
@@ -135,4 +141,22 @@ def get_question_qha(question_number: int):
     data = cur.fetchall()
 
     con.close()
-    return data
+    return data[0]
+
+
+def change_question_status(question_number: int, user_id: int, status: str):
+    con = sqlite3.connect("data/users.db")
+    cur = con.cursor()
+
+    query = """
+    update questions
+    set status = '{}' 
+    where id = {} and number = {}
+    """.format(status, user_id, question_number)
+
+    cur.execute(query)
+
+    con.commit()
+    con.close()
+
+# ----- QUESTIONS -----
