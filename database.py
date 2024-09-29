@@ -51,3 +51,19 @@ def init_user(user_id: int):
 
         con.commit()
         con.close()
+
+
+def get_question_labels():
+    con = sqlite3.connect("data/quiz.db")
+    cur = con.cursor()
+
+    query = "select label from questions"
+    cur.execute(query)
+
+    data = cur.fetchall()
+    labels = []
+
+    for item in data:
+        labels.append(item[0])
+
+    return labels
