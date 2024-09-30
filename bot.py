@@ -100,10 +100,17 @@ def show_hint(message, question_number):
     answer_question(message, question_number)
 
 
-@bot.message_handler(commands=["start"])
+@bot.message_handler(commands=["start", "reset"])
 def start(message):
-    database.init_user(message.from_user.id)
-    welcome(message)
+    text = message.text
+
+    if text == "/start":
+        database.init_user(message.from_user.id)
+        welcome(message)
+
+    elif text == "/reset":
+        database.reset_user(message.from_user.id)
+        welcome(message)
 
 
 @bot.message_handler()

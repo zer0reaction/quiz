@@ -75,6 +75,16 @@ def init_user(user_id: int):
         print("Error initializing! User " + str(user_id) + " does not exits")
 
 
+def reset_user(user_id: int):
+    query = "delete from state where id = {}".format(user_id)
+    execute_query("users.db", query)
+
+    query = "delete from questions where id = {}".format(user_id)
+    execute_query("users.db", query)
+
+    init_user(user_id)
+
+
 def get_user_state(user_id: int):
     if check_user_existence(user_id):
         query = """
