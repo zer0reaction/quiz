@@ -1,12 +1,39 @@
 import sqlite3
 
 
+def execute_query(database :str, query: str, return_option: str | None = "none"):
+    con = sqlite3.connect("data/" + database)
+    cur = con.cursor()
+
+    cur.execute(query)
+    data = []
+
+    if return_option == "one":
+        data = cur.fetchone()
+
+    elif return_option == "all":
+        data = cur.fetchall()
+
+    else:
+        data = []
+
+    con.commit()
+    con.close()
+    return data
+
+def executemany_query(database: str, query: str, input: list):
+    con = sqlite3.connect("data/" + database)
+    cur = con.cursor()
+
+    cur.executemany(query, input)
+
+    con.commit()
+    con.close()
+
+
 # ----- USERS -----
 
 def check_user_existence(user_id: int):
-    con = sqlite3.connect("data/users.db")
-    cur = con.cursor()
-
     query = """
     select exists(
         select 1 
@@ -14,18 +41,12 @@ def check_user_existence(user_id: int):
         where id = {}
     )""".format(user_id)
 
-    cur.execute(query)
-    data = cur.fetchone()
-
-    con.close()
+    data = execute_query("users.db", query, "one")
     return data[0] == 1
 
 
 def init_user(user_id: int):
     if not check_user_existence(user_id):
-        con = sqlite3.connect("data/users.db")
-        cur = con.cursor()
-
         query_for_state = """
         insert into state values (
             {},
@@ -47,11 +68,8 @@ def init_user(user_id: int):
             (user_id, 5, 'not_answered')
         ]
 
-        cur.execute(query_for_state)
-        cur.executemany(query_for_questions, records)
-
-        con.commit()
-        con.close()
+        execute_query("users.db", query_for_state)
+        executemany_query("users.db", query_for_questions, records)
 
     else:
         print("Error initializing! User " + str(user_id) + " does not exits")
@@ -59,19 +77,14 @@ def init_user(user_id: int):
 
 def get_user_state(user_id: int):
     if check_user_existence(user_id):
-        con = sqlite3.connect("data/users.db")
-        cur = con.cursor()
-
         query = """
         select state
         from state
         where id = {}
         """.format(user_id)
 
-        cur.execute(query)
-        data = cur.fetchone()
+        data = execute_query("users.db", query, "one")
 
-        con.close()
         return data[0]
 
     else:
@@ -80,43 +93,32 @@ def get_user_state(user_id: int):
 
 def change_user_state(user_id: int, state: str):
     if check_user_existence(user_id):
-        con = sqlite3.connect("data/users.db")
-        cur = con.cursor()
-
         query = """
         update state
         set state = '{}'
         where id = {}
         """.format(state, user_id)
 
-        cur.execute(query)
-        con.commit()
-        con.close()
-
+        execute_query("users.db", query)
     else:
         print("Error changing user state! User " + str(user_id) + " does not exits")
 
 
 def get_question_statuses(user_id: int):
     if check_user_existence(user_id):
-        con = sqlite3.connect("data/users.db")
-        cur = con.cursor()
-
         query = """
         select status
         from questions
         where id = {}
         """.format(user_id)
 
-        cur.execute(query)
-        data = cur.fetchall()
+        data = execute_query("users.db", query, "all")
 
         statuses = []
 
         for item in data:
             statuses.append(item[0])
 
-        con.close()
         return statuses
     else:
         print("Error getting question statuses! User " + str(user_id) + " does not exits")
@@ -128,19 +130,14 @@ def get_question_statuses(user_id: int):
 # ----- QUIZ -----
 
 def get_question_labels():
-    con = sqlite3.connect("data/quiz.db")
-    cur = con.cursor()
-
     query = "select label from questions"
-    cur.execute(query)
+    data = execute_query("quiz.db", query, "all")
 
-    data = cur.fetchall()
     labels = []
 
     for item in data:
         labels.append(item[0])
 
-    con.close()
     return labels
 
 
@@ -163,35 +160,24 @@ def get_question_photo(question_number: int):
 
 
 def get_question_qha(question_number: int):
-    con = sqlite3.connect("data/quiz.db")
-    cur = con.cursor()
-
     query = """
     select question, hint, answer
     from questions
     where rowid = {}
     """.format(question_number)
 
-    cur.execute(query)
-    data = cur.fetchall()
+    data = execute_query("quiz.db", query, "one")
 
-    con.close()
-    return data[0]
+    return data
 
 
 def change_question_status(question_number: int, user_id: int, status: str):
-    con = sqlite3.connect("data/users.db")
-    cur = con.cursor()
-
     query = """
     update questions
     set status = '{}' 
     where id = {} and number = {}
     """.format(status, user_id, question_number)
 
-    cur.execute(query)
-
-    con.commit()
-    con.close()
+    execute_query("users.db", query)
 
 # ----- QUIZ -----
