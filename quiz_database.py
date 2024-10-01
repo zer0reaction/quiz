@@ -30,9 +30,9 @@ def get_question_photo(question_number: int):
     return data[0]
 
 
-def get_question_qa(question_number: int):
+def get_question_qai(question_number: int):
     query = """
-    select question, answer
+    select question, answer, info
     from questions
     where rowid = {}
     """.format(question_number)
@@ -40,6 +40,24 @@ def get_question_qa(question_number: int):
     data = database.execute_query("quiz.db", query, "one")
 
     return data
+
+
+def get_question_info_photo(question_number: int):
+    con = sqlite3.connect("data/quiz.db")
+    con.text_factory = bytes
+    cur = con.cursor()
+
+    query = """
+    select info_photo
+    from questions
+    where rowid = {}
+    """.format(question_number)
+
+    cur.execute(query)
+    data = cur.fetchone()
+
+    con.close()
+    return data[0]
 
 
 def get_hints_amount(question_number: int):

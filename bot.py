@@ -5,8 +5,6 @@ bot = telebot.TeleBot(token=creds.token, parse_mode="HTML")
 
 
 def welcome(message):
-    print("Welcoming user " + str(message.from_user.id))
-
     users_database.change_user_state(message.from_user.id, "welcome")
 
     text = "Привет! Поучаствуй в нашей викторине!\n\n<b>Выбери вопрос:</b>"
@@ -29,11 +27,9 @@ def welcome(message):
 
 
 def display_question(message, question_number: int):
-    print("Displaying question for user " + str(message.from_user.id))
-
     users_database.change_user_state(message.from_user.id, "viewing_question_" + str(question_number))
 
-    data = quiz_database.get_question_qa(question_number)
+    data = quiz_database.get_question_qai(question_number)
 
     text = data[0]
     photo = quiz_database.get_question_photo(question_number)
@@ -51,8 +47,6 @@ def display_question(message, question_number: int):
 
 
 def answer_question(message, question_number: int):
-    print("User " + str(message.from_user.id) + " is answering question")
-
     users_database.change_user_state(message.from_user.id, "answering_question_" + str(question_number))
 
     text = "Отправьте Ваш ответ на вопрос:"
@@ -65,21 +59,21 @@ def answer_question(message, question_number: int):
 
 
 def check_answer(message, question_number: int):
-    print("Checking answer for user " + str(message.from_user.id))
-    data = quiz_database.get_question_qa(question_number)
+    data = quiz_database.get_question_qai(question_number)
 
     answers = data[1]
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
 
     if message.text in answers.split(", "):
-        text = "Поздравляем! Ваш ответ верный"
+        text = "Поздравляем! Ты ответил правильно.\n\n" + data[2]
+        photo = quiz_database.get_question_info_photo(question_number)
 
         users_database.change_question_status(question_number, message.from_user.id, "right")
         users_database.change_user_state(message.from_user.id, "answered_right_" + str(question_number))
 
         markup.add(InlineKeyboardButton("Назад"))
 
-        bot.send_message(message.chat.id, text, reply_markup=markup)
+        bot.send_photo(message.chat.id, photo=photo, caption=text, reply_markup=markup)
 
     else:
         text = "Ваш ответ неверный. Попробуйте еще раз или воспользуйтесь подсказкой"
@@ -94,8 +88,6 @@ def check_answer(message, question_number: int):
 
 
 def show_hints(message, question_number):
-    print("Showing hints for user " + str(message.from_user.id))
-
     state = users_database.get_user_state(message.from_user.id)
 
     if "answered_wrong_" in str(state):
@@ -115,8 +107,6 @@ def show_hints(message, question_number):
 
 
 def show_hint(message, question_number: int, hint_number: int):
-    print("Showing hint for user " + str(message.from_user.id))
-
     state = users_database.get_user_state(message.from_user.id)
 
     if "viewing_hints_for_question_after_answering_wrong_" in str(state): 

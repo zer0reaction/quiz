@@ -22,7 +22,9 @@ sqlite3 data/quiz.db \
     label text,
     photo blob,
     question text,
-    answer text
+    answer text,
+    info text,
+    info_photo blob
 )"
 
 sqlite3 data/quiz.db \
