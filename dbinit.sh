@@ -22,6 +22,13 @@ sqlite3 data/quiz.db \
     label text,
     photo blob,
     question text,
-    hint text,
     answer text
+)"
+
+sqlite3 data/quiz.db \
+"create table hints (
+    question_number int,
+    hint_number int,
+    hint text,
+    photo blob
 )"

@@ -33,7 +33,7 @@ def display_question(message, question_number: int):
 
     users_database.change_user_state(message.from_user.id, "viewing_question_" + str(question_number))
 
-    data = quiz_database.get_question_qha(question_number)
+    data = quiz_database.get_question_qa(question_number)
 
     text = data[0]
     photo = quiz_database.get_question_photo(question_number)
@@ -66,9 +66,9 @@ def answer_question(message, question_number: int):
 
 def check_answer(message, question_number: int):
     print("Checking answer for user " + str(message.from_user.id))
-    data = quiz_database.get_question_qha(question_number)
+    data = quiz_database.get_question_qa(question_number)
 
-    answers = data[2]
+    answers = data[1]
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
 
     if message.text in answers.split(", "):
@@ -103,13 +103,35 @@ def show_hints(message, question_number):
     else:
         users_database.change_user_state(message.from_user.id, "viewing_hints_for_question_" + str(question_number))
 
-    data = quiz_database.get_question_qha(question_number)
-    hint = data[1]
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    
+    hints_amount = quiz_database.get_hints_amount(question_number)
+    for i in range(1, hints_amount + 1):
+        markup.add(InlineKeyboardButton("Подсказка " + str(i)))
+
+    markup.add(InlineKeyboardButton("Назад"))
+
+    bot.send_message(message.chat.id, "Выбери подсказку:", reply_markup=markup)
+
+
+def show_hint(message, question_number: int, hint_number: int):
+    print("Showing hint for user " + str(message.from_user.id))
+
+    state = users_database.get_user_state(message.from_user.id)
+
+    if "viewing_hints_for_question_after_answering_wrong_" in str(state): 
+        users_database.change_user_state(message.from_user.id, "viewing_hint_for_question_after_answering_wrong_" + str(hint_number) + "_" + str(question_number))
+
+    elif "viewing_hints_for_question_" in str(state): 
+        users_database.change_user_state(message.from_user.id, "viewing_hint_for_question_" + str(hint_number) + "_" + str(question_number))
 
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(InlineKeyboardButton("Назад"))
 
-    bot.send_message(message.chat.id, str(hint), reply_markup=markup)
+    photo = quiz_database.get_hint_photo(question_number, hint_number)
+    text = quiz_database.get_hint_text(question_number, hint_number)
+
+    bot.send_photo(message.chat.id, photo=photo, caption=text, reply_markup=markup)
 
 
 @bot.message_handler(commands=["start", "reset"])
@@ -154,6 +176,20 @@ def message_handler(message):
             question_number = int(re.findall(r"\d+", str(state))[0])
             display_question(message, question_number)
 
+        elif "viewing_hint_for_question_after_answering_wrong_" in str(state):
+            r = re.findall(r"\d+", str(state))
+            hint_number = int(r[0])
+            question_number = int(r[1])
+
+            show_hints(message, question_number)
+
+        elif "viewing_hint_for_question_" in str(state):
+            r = re.findall(r"\d+", str(state))
+            hint_number = int(r[0])
+            question_number = int(r[1])
+
+            show_hints(message, question_number)
+
     # Checking going to questions
     elif state == "welcome":
         # When the text is with mark
@@ -177,6 +213,19 @@ def message_handler(message):
     elif text == "Хочешь подсказку?" and "viewing_question_" in str(state):
         question_number = int(re.findall(r"\d+", str(state))[0])
         show_hints(message, question_number)
+
+    # Checking hint buttons
+    elif "viewing_hints_for_question_after_answering_wrong_" in str(state):
+        question_number = int(re.findall(r"\d+", str(state))[0])
+        hint_number = int(re.findall(r"\d+", str(text))[0])
+
+        show_hint(message, question_number, hint_number)
+
+    elif "viewing_hints_for_question_" in str(state):
+        question_number = int(re.findall(r"\d+", str(state))[0])
+        hint_number = int(re.findall(r"\d+", str(text))[0])
+
+        show_hint(message, question_number, hint_number)
 
     # Checking answers
     elif "answering_question_" in str(state):
