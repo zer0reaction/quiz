@@ -181,6 +181,7 @@ def message_handler(message):
             hint_number = int(r[0])
             question_number = int(r[1])
 
+            users_database.change_user_state(message.from_user.id, "answered_wrong_" + str(question_number))
             show_hints(message, question_number)
 
         elif "viewing_hint_for_question_" in str(state):

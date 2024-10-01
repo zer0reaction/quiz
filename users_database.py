@@ -84,6 +84,8 @@ def change_user_state(user_id: int, state: str):
 
         database.execute_query("users.db", query)
 
+        print("Changed {} state to {}".format(user_id, state))
+
     else:
         print("Error changing user state! User " + str(user_id) + " does not exits")
         print("Initializing user " + str(user_id))
