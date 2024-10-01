@@ -1,5 +1,5 @@
 import telebot, users_database, quiz_database, creds, re
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
+from telebot.types import InlineKeyboardButton, ReplyKeyboardMarkup
 
 bot = telebot.TeleBot(token=creds.token, parse_mode="HTML")
 
