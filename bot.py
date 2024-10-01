@@ -7,7 +7,7 @@ bot = telebot.TeleBot(token=creds.token, parse_mode="HTML")
 def welcome(message):
     users_database.change_user_state(message.from_user.id, "welcome")
 
-    text = "Привет! Поучаствуй в нашей викторине!\n\n<b>Выбери вопрос:</b>"
+    text = "<b>Выбери вопрос:</b>"
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
     labels = quiz_database.get_question_labels()
     question_statuses = users_database.get_question_statuses(message.from_user.id)
@@ -49,7 +49,7 @@ def display_question(message, question_number: int):
 def answer_question(message, question_number: int):
     users_database.change_user_state(message.from_user.id, "answering_question_" + str(question_number))
 
-    text = "Отправьте Ваш ответ на вопрос:"
+    text = "<b>Отправь ответ на вопрос:</b>"
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
     back_button = InlineKeyboardButton("Назад")
 
@@ -65,7 +65,7 @@ def check_answer(message, question_number: int):
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
 
     if message.text in answers.split(", "):
-        text = "Поздравляем! Ты ответил правильно.\n\n" + data[2]
+        text = "<b>Поздравляем! Ты ответил правильно.</b>\n\n" + data[2]
         photo = quiz_database.get_question_info_photo(question_number)
 
         users_database.change_question_status(question_number, message.from_user.id, "right")
@@ -76,7 +76,7 @@ def check_answer(message, question_number: int):
         bot.send_photo(message.chat.id, photo=photo, caption=text, reply_markup=markup)
 
     else:
-        text = "Ваш ответ неверный. Попробуйте еще раз или воспользуйтесь подсказкой"
+        text = "<b>Твой ответ неверный. Попробуй еще раз или воспользуйся подсказкой</b>"
 
         users_database.change_question_status(question_number, message.from_user.id, "wrong")
         users_database.change_user_state(message.from_user.id, "answered_wrong_" + str(question_number))
@@ -103,7 +103,7 @@ def show_hints(message, question_number):
 
     markup.add(InlineKeyboardButton("Назад"))
 
-    bot.send_message(message.chat.id, "Выбери подсказку:", reply_markup=markup)
+    bot.send_message(message.chat.id, "<b>Выбери подсказку:</b>", reply_markup=markup)
 
 
 def show_hint(message, question_number: int, hint_number: int):
