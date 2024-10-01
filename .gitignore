@@ -1,0 +1,9 @@
+creds.py
+
+__pycache__
+bin
+data/users.db
+lib
+lib64
+pyrightconfig.json
+pyvenv.cfg
