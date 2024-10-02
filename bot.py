@@ -228,4 +228,4 @@ def message_handler(message):
         check_answer(message, question_number)
 
 
-bot.polling(non_stop=True)
+bot.infinity_polling()
