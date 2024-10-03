@@ -34,7 +34,7 @@ def get_question_qai(question_number: int):
     query = """
     select question, answer, info
     from questions
-    where rowid = {}
+    where number = {}
     """.format(question_number)
 
     data = database.execute_query("quiz.db", query, "one")

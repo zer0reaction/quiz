@@ -19,6 +19,7 @@ sqlite3 data/users.db \
 
 sqlite3 data/quiz.db \
 "create table questions (
+    number int,
     label text,
     photo blob,
     question text,
