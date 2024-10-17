@@ -27,7 +27,8 @@ def welcome(message):
 
 
 def display_question(message, question_number: int):
-    users_database.change_user_state(message.from_user.id, "viewing_question_" + str(question_number))
+    users_database.change_user_state(message.from_user.id, 
+                                     "viewing_question_" + str(question_number))
 
     data = quiz_database.get_question_qai(question_number)
 
